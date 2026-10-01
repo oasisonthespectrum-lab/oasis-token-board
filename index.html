@@ -28,7 +28,7 @@ h2{font-size:clamp(1.7rem,4vw,2.5rem)}
 .sub{margin:0 0 24px;color:var(--muted);font-weight:700;line-height:1.5}
 .actions,.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .actions{margin-top:22px}
-.btn{border:0;border-radius:16px;padding:13px 17px;font-weight:900;background:#eef1f7;color:#283550;box-shadow:0 3px 0 rgba(30,40,70,.08)}
+.btn{border:0;border-radius:16px;padding:13px 17px;font-weight:900;background:#eef1f7;color:#283550;box-shadow:0 3px 0 rgba(30,40,70,.08);display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
 .btn:active{transform:translateY(1px)}
 .btn.primary{background:linear-gradient(90deg,var(--brand1),#8878ff);color:#fff}
 .btn.green{background:linear-gradient(90deg,#15a6a0,#37b98d);color:#fff}
@@ -116,18 +116,75 @@ input[type="text"]{width:100%;padding:14px 16px;border:2px solid #dfe3ed;border-
   .theme-card .mini-icons span{font-size:2.15rem}
 }
 @media print{
-  @page{size:letter portrait;margin:.35in}
-  html,body{background:#fff!important}
-  .topbar,.controls,.note,.panel>h2,.panel>.sub,.theme-chip{display:none!important}
-  .app{max-width:none;padding:0}
-  .panel{border:0;box-shadow:none;padding:0;background:#fff}
-  #startScreen,#themeScreen,#setupScreen{display:none!important}
-  #boardScreen{display:block!important}
-  .board-shell{
-    min-height:9.55in;height:9.55in;border-radius:24px;box-shadow:none;
-    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  @page{size:letter portrait;margin:.2in}
+  html,body{
+    margin:0!important;
+    padding:0!important;
+    width:8.1in!important;
+    height:10.6in!important;
+    overflow:hidden!important;
+    background:#fff!important;
   }
-  .star{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .topbar,.controls,.note,.panel>h2,.panel>.sub,.theme-chip,
+  #startScreen,#themeScreen,#setupScreen{
+    display:none!important;
+  }
+  .app{
+    width:8.1in!important;
+    height:10.6in!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+  }
+  #boardScreen{
+    display:block!important;
+    width:8.1in!important;
+    height:10.6in!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    page-break-after:avoid!important;
+    break-after:avoid-page!important;
+  }
+  #boardScreen .panel{
+    width:8.1in!important;
+    height:10.6in!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    box-shadow:none!important;
+    background:#fff!important;
+    overflow:hidden!important;
+  }
+  .board-shell{
+    width:8.1in!important;
+    height:10.6in!important;
+    min-height:0!important;
+    max-height:10.6in!important;
+    margin:0!important;
+    padding:.28in .2in!important;
+    border-width:5px!important;
+    border-radius:22px!important;
+    box-shadow:none!important;
+    overflow:hidden!important;
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+    page-break-inside:avoid!important;
+    break-inside:avoid-page!important;
+  }
+  .board-title{
+    margin:.03in auto .12in!important;
+    padding:.12in .12in .1in!important;
+  }
+  .stars{
+    margin:.55in auto 0!important;
+    gap:.12in!important;
+  }
+  .star{
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+  }
   .celebrate{display:none!important}
 }
 </style>
@@ -144,9 +201,9 @@ input[type="text"]{width:100%;padding:14px 16px;border:2px solid #dfe3ed;border-
       <h1>Create a <span class="gradient-word">Fun Token Board</span></h1>
       <p class="sub">Choose from 24 themes, add a child’s name, pick 3, 5, or 10 stars, and use the board interactively or print it.</p>
       <div class="actions">
-        <button class="btn primary" onclick="go('themeScreen')">Create New Token Board</button>
-        <button class="btn green" onclick="document.getElementById('importStart').click()">Import Saved Board</button>
-        <input id="importStart" class="hidden" type="file" accept=".json" onchange="importBoard(event)">
+        <button class="btn primary" onclick="newBoard()">Create New Token Board</button>
+        <label class="btn green" for="importStart" role="button">Import Saved Board</label>
+        <input id="importStart" class="hidden" type="file" accept="application/json,.json" onchange="importBoard(event)">
       </div>
     </div>
   </section>
@@ -171,7 +228,7 @@ input[type="text"]{width:100%;padding:14px 16px;border:2px solid #dfe3ed;border-
   <section id="setupScreen" class="screen">
     <div class="panel">
       <h2>Personalize the Board</h2>
-      <p class="sub">Add the child’s name and choose the number of stars. No reward or goal field is required.</p>
+      <p class="sub">Enter any child’s name and choose 5 or 10 stars. Every new board begins with 0 earned stars.</p>
       <div class="form-grid">
         <div>
           <label for="childName">Child’s Name</label>
@@ -180,7 +237,6 @@ input[type="text"]{width:100%;padding:14px 16px;border:2px solid #dfe3ed;border-
         <div>
           <label>Number of Stars</label>
           <div class="star-options">
-            <button class="star-choice" data-count="3" onclick="chooseCount(this)">3</button>
             <button class="star-choice active" data-count="5" onclick="chooseCount(this)">5</button>
             <button class="star-choice" data-count="10" onclick="chooseCount(this)">10</button>
           </div>
@@ -207,15 +263,16 @@ input[type="text"]{width:100%;padding:14px 16px;border:2px solid #dfe3ed;border-
       </div>
 
       <div class="controls">
+        <button class="btn primary" onclick="personalizeBoard()">Personalize</button>
         <button class="btn primary" onclick="changeTheme()">Change Theme</button>
         <button class="btn" onclick="resetTokens()">Reset Tokens</button>
         <button class="btn red" onclick="clearBoard()">Start Over</button>
-        <button class="btn green" onclick="window.print()">Print</button>
+        <button class="btn green" onclick="printBoard()">Print Board</button>
         <button class="btn" onclick="exportBoard()">Export</button>
-        <button class="btn" onclick="document.getElementById('importBoardInput').click()">Import</button>
-        <input id="importBoardInput" class="hidden" type="file" accept=".json" onchange="importBoard(event)">
+        <label class="btn" for="importBoardInput" role="button">Import Board</label>
+        <input id="importBoardInput" class="hidden" type="file" accept="application/json,.json" onchange="importBoard(event)">
       </div>
-      <div class="note">Every new board starts with 0 earned stars. Tap any star to add it; tap that star again to remove it. “Change Theme” keeps the child’s name and current stars.</div>
+      <div class="note">Every new board starts with 0 earned stars. Tap any star to add it; tap the same star again to remove it. Personalize edits the name or star count. Change Theme keeps the current name and earned stars.</div>
     </div>
   </section>
 </div>
@@ -248,7 +305,7 @@ const themes = [
   {id:'birthday',name:'Birthday',icons:['🎂','🎈','🎉'],desc:'Cake, balloons & celebration',c1:'#ffd5e5',c2:'#d7e5ff',c3:'#fff0a8',accent:'#d95b88',text:'#633247'}
 ];
 
-const validCounts=[3,5,10];
+const validCounts=[5,10];
 function loadEarnedStars(){
   try{
     const saved=JSON.parse(localStorage.getItem('oasis_earned_stars')||'[]');
@@ -305,7 +362,39 @@ function chooseCount(el){
 function createBoard(){
   const name=document.getElementById('childName').value.trim();
   if(!name){alert('Please enter the child’s name.');return}
-  state.name=name;state.earnedStars=[];save();renderBoard();go('boardScreen');
+  const wasBlank=!state.name;
+  state.name=name;
+  state.earnedStars=state.earnedStars.filter(i=>i<state.count);
+  if(wasBlank) state.earnedStars=[];
+  save();renderBoard();go('boardScreen');
+}
+
+function newBoard(){
+  state.theme='halloween';
+  state.name='';
+  state.count=5;
+  state.earnedStars=[];
+  document.getElementById('childName').value='';
+  document.querySelectorAll('.star-choice').forEach(x=>x.classList.toggle('active',Number(x.dataset.count)===5));
+  document.getElementById('themeSearch').value='';
+  renderThemeGrid();
+  save();
+  go('themeScreen');
+}
+function personalizeBoard(){
+  document.getElementById('childName').value=state.name || '';
+  document.querySelectorAll('.star-choice').forEach(x=>x.classList.toggle('active',Number(x.dataset.count)===state.count));
+  go('setupScreen');
+}
+function printBoard(){
+  renderBoard();
+  document.body.classList.add('printing');
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      try{ window.print(); }
+      finally{ setTimeout(()=>document.body.classList.remove('printing'),800); }
+    });
+  });
 }
 function changeTheme(){
   renderThemeGrid();go('themeScreen');
@@ -368,21 +457,44 @@ function save(){
   localStorage.setItem('oasis_earned_stars',JSON.stringify(state.earnedStars));
   localStorage.removeItem('oasis_earned');
 }
-function exportBoard(){
-  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download=(state.name||'token-board').replace(/\s+/g,'-').toLowerCase()+'-token-board.json';
-  a.click();URL.revokeObjectURL(a.href);
+async function exportBoard(){
+  try{
+    const filename=(state.name||'token-board').replace(/\s+/g,'-').toLowerCase()+'-token-board.json';
+    const data=JSON.stringify({
+      theme:state.theme,
+      name:state.name,
+      count:state.count,
+      earnedStars:state.earnedStars
+    },null,2);
+    const file=new File([data],filename,{type:'application/json'});
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:'Oasis Token Board'});
+      return;
+    }
+    const blob=new Blob([data],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=filename;a.style.display='none';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
+  }catch(err){
+    if(err && err.name!=='AbortError') alert('The board could not be exported on this browser.');
+  }
 }
 function importBoard(e){
-  const file=e.target.files[0];if(!file)return;
+  const input=e.target;
+  const file=input.files && input.files[0];
+  if(!file){ input.value=''; return; }
   const reader=new FileReader();
   reader.onload=()=>{
     try{
-      const data=JSON.parse(reader.result);
+      const data=JSON.parse(String(reader.result||''));
       if(!themes.some(t=>t.id===data.theme))throw new Error('Unknown theme');
       if(!validCounts.includes(Number(data.count)))throw new Error('Invalid star count');
-      state.theme=data.theme;state.name=String(data.name||'').slice(0,24);
+      const importedName=String(data.name||'').trim().slice(0,24);
+      if(!importedName) throw new Error('Missing name');
+      state.theme=data.theme;
+      state.name=importedName;
       state.count=Number(data.count);
       if(Array.isArray(data.earnedStars)){
         state.earnedStars=[...new Set(data.earnedStars.map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<state.count))].sort((a,b)=>a-b);
@@ -390,10 +502,17 @@ function importBoard(e){
         const oldEarned=Math.max(0,Math.min(Number(data.earned||0),state.count));
         state.earnedStars=Array.from({length:oldEarned},(_,i)=>i);
       }
-      save();renderThemeGrid();renderBoard();go('boardScreen');
-    }catch(err){alert('That file could not be imported.')}
-    e.target.value='';
+      save();
+      document.getElementById('childName').value=state.name;
+      document.querySelectorAll('.star-choice').forEach(x=>x.classList.toggle('active',Number(x.dataset.count)===state.count));
+      renderThemeGrid();renderBoard();go('boardScreen');
+    }catch(err){
+      alert('That file could not be imported. Please choose a board exported from this Token Board Builder.');
+    }finally{
+      input.value='';
+    }
   };
+  reader.onerror=()=>{ alert('That file could not be read.'); input.value=''; };
   reader.readAsText(file);
 }
 function celebrate(){
@@ -413,9 +532,12 @@ window.addEventListener('DOMContentLoaded',()=>{
   if(!validCounts.includes(state.count))state.count=5;
   if(!themes.some(t=>t.id===state.theme))state.theme='halloween';
   state.earnedStars=[...new Set(state.earnedStars.filter(i=>Number.isInteger(i)&&i>=0&&i<state.count))].sort((a,b)=>a-b);
-  document.getElementById('childName').value=state.name;
-  document.querySelectorAll('.star-choice').forEach(x=>x.classList.toggle('active',Number(x.dataset.count)===state.count));
-  if(state.name){renderBoard();go('boardScreen')}
+  document.getElementById('childName').value='';
+  state.name='';
+  state.count=5;
+  state.earnedStars=[];
+  document.querySelectorAll('.star-choice').forEach(x=>x.classList.toggle('active',Number(x.dataset.count)===5));
+  go('startScreen');
 });
 </script>
 </body>
